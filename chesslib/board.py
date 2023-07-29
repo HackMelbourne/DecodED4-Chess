@@ -25,10 +25,10 @@ class Board:
     """The chessboard class"""
 
     def __init__(self):
-        self.load(INIT_FEN)
         self.positions = [None]
         self.state: dict[str, Piece] = {}
         self.player_turn = "white"
+        self.load(INIT_FEN)
 
     def load(self, config: str):
         """Import state from FEN notation"""
@@ -64,5 +64,4 @@ class Board:
 
     def _is_cell_empty(self, val: str) -> bool:
         return val == " "
-
 

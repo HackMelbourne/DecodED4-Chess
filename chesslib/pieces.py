@@ -1,5 +1,3 @@
-from .board import Board
-
 class Piece:
     def __init__(self, color):
         self.color = color
@@ -12,7 +10,7 @@ class Piece:
         """TODO: Find all possible moves for a piece"""
         pass
 
-    def place(self, board: Board):
+    def place(self, board):
         """TODO: Place piece within a board"""
         pass
 
@@ -65,6 +63,8 @@ def generate_piece(letter: str) -> Piece | None:
     piece = letter.upper()
     if piece == "P":
         return Pawn(color)
+    if piece == "R":
+        return Rook(color)
     if piece == "N":
         return Knight(color)
     if piece == "B":
