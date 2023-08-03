@@ -8,6 +8,10 @@ def expand_blanks(match: re.Match[str]) -> str:
     return " " * int(match.group(0))
 
 
+def number_notation(coord: str) -> tuple[int, int]:
+    return int(coord[1])-1, Y_AXIS_LABEL.index(coord[0])
+
+
 class BoardCoordinates:
     def __init__(self, x: int, y: int):
         self.x = int(x)
@@ -51,16 +55,16 @@ class Board:
 
         # TODO: castling, en_passant, halfmove_clock, fullmove_clock
 
+    def items(self):
+        return self.state.items()
 
     def _coord_letter_notation(self, coord: BoardCoordinates) -> str | None:
         if not coord.is_in_bounds():
             return
         return Y_AXIS_LABEL[int(coord.y)] + str(X_AXIS_LABEL[int(coord.x)])
 
-
     def _get_rows(self, fen: str):
         return fen.split("/")
-
 
     def _is_cell_empty(self, val: str) -> bool:
         return val == " "
