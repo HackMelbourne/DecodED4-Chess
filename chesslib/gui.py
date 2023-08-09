@@ -1,8 +1,10 @@
 import tkinter as tk
 from PIL import ImageTk, Image
 
-from .board import Board, number_notation
+from .board import Board
 from .pieces import Piece
+from .utils import letter_to_board_coords, BoardCoordinates
+from .constants import BOARD_SIZE
 
 
 class BoardGui(tk.Frame):
@@ -15,6 +17,9 @@ class BoardGui(tk.Frame):
         self.chessboard: Board = chessboard
         self.square_size: int = square_size
 
+        self.selected_piece: tuple[Piece, BoardCoordinates] | None = None
+        self.highlighted: list[tuple[int, int]] | None = None
+
         canvas_width = self.columns * square_size
         canvas_height = self.rows * square_size
 
@@ -23,12 +28,42 @@ class BoardGui(tk.Frame):
         self.canvas = tk.Canvas(self, width=canvas_width, height=canvas_height, background="grey")
         self.canvas.pack(side="top", fill="both", anchor="c", expand=True)
 
+    def click(self, event: tk.Event):
+        # Figure out which square we've clicked
+        col_size = row_size = event.widget.master.square_size
+        current_column = int(event.x / col_size)
+        current_row = int(BOARD_SIZE - (event.y / row_size))
+
+        position = BoardCoordinates(current_row, current_column)
+        piece = self.chessboard.get_piece_at(position)
+
+        # Move on second click
+        if self.selected_piece:
+            self.move(self.selected_piece[1], position)
+            self.selected_piece = None
+            self.highlighted = None
+
+        self.highlight(position)
+        if self.highlighted is not None:
+            for square in self.highlighted:
+                self.redraw_square(square, "spring green")
+
+    def highlight(self, pos: BoardCoordinates):
+        piece = self.chessboard.get_piece_at(pos)
+        if piece is None or (piece.color != self.chessboard.player_turn):
+            return
+
+        self.selected_piece = (piece, pos)
+        self.highlighted = [pos.number_notation()]
+
+
     def draw_pieces(self):
         self.canvas.delete("piece")
 
         for coord, piece in self.chessboard.items():
             if piece is not None:
-                x, y = number_notation(coord)
+                parsed = letter_to_board_coords(coord)
+                x, y = parsed.number_notation()
                 self.draw_piece(piece, x, y)
 
     def draw_piece(self, piece: Piece, row: int, col: int):
@@ -72,7 +107,3 @@ def display(chessboard: Board):
     gui.draw_pieces()
 
     root.mainloop()
-
-
-if __name__ == "__main__":
-    display()

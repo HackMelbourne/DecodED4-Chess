@@ -1,3 +1,6 @@
+from .utils import BoardCoordinates
+
+
 class Piece:
     def __init__(self, color):
         self.color = color
@@ -11,8 +14,8 @@ class Piece:
         pass
 
     def place(self, board):
-        """TODO: Place piece within a board"""
-        pass
+        """ Keep a reference to the board """
+        self.board = board
 
 
 class Pawn(Piece):
