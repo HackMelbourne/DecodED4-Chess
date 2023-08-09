@@ -18,7 +18,7 @@ class BoardGui(tk.Frame):
         self.square_size: int = square_size
 
         self.selected_piece: tuple[Piece, BoardCoordinates] | None = None
-        self.highlighted: list[tuple[int, int]] | None = None
+        self.highlighted: list[BoardCoordinates] | None = None
 
         canvas_width = self.columns * square_size
         canvas_height = self.rows * square_size
@@ -28,11 +28,14 @@ class BoardGui(tk.Frame):
         self.canvas = tk.Canvas(self, width=canvas_width, height=canvas_height, background="grey")
         self.canvas.pack(side="top", fill="both", anchor="c", expand=True)
 
+        self.canvas.bind("<Button-1>", self.click)
+
     def click(self, event: tk.Event):
         # Figure out which square we've clicked
         col_size = row_size = event.widget.master.square_size
         current_column = int(event.x / col_size)
         current_row = int(BOARD_SIZE - (event.y / row_size))
+        print(current_row, current_column)
 
         position = BoardCoordinates(current_row, current_column)
         piece = self.chessboard.get_piece_at(position)
@@ -42,19 +45,37 @@ class BoardGui(tk.Frame):
             self.move(self.selected_piece[1], position)
             self.selected_piece = None
             self.highlighted = None
+            self.draw_pieces()
 
         self.highlight(position)
         if self.highlighted is not None:
             for square in self.highlighted:
                 self.redraw_square(square, "spring green")
 
+    def move(self, p1: BoardCoordinates, p2: BoardCoordinates):
+        piece = self.chessboard.get_piece_at(p1)
+        enemy = self.chessboard.get_opponent(piece.color)
+        dest_piece = self.chessboard.get_piece_at(p2)
+
+        if dest_piece is not None and dest_piece.color == piece.color:
+            return
+
+        self.chessboard.move(p1, p2)
+        self.redraw_square(p1, "tan1")
+        self.redraw_square(p2, "tan1")
+
     def highlight(self, pos: BoardCoordinates):
         piece = self.chessboard.get_piece_at(pos)
         if piece is None or (piece.color != self.chessboard.player_turn):
             return
 
+        print("Selected: ", piece.abbreviation)
         self.selected_piece = (piece, pos)
-        self.highlighted = [pos.number_notation()]
+        self.highlighted = [pos]
+
+    def redraw_square(self, coord: BoardCoordinates, color=None):
+        """Change the color of the square at `coord` to `color`"""
+        pass
 
 
     def draw_pieces(self):

@@ -58,7 +58,7 @@ class Board:
             raise NotYourTurn("Not " + moved_piece.color + "'s turn")
 
         self._do_move(p1, p2)
-        self._finish_move(p1, p2)
+        self._finish_move(moved_piece, dest_piece, p1, p2)
 
     def _do_move(self, p1: BoardCoordinates, p2: BoardCoordinates):
         """Move a piece without validation"""
@@ -73,19 +73,21 @@ class Board:
         abbr = player.abbreviation
 
         if dest is None:
-            movetext = abbr + p2.letter_notation()
+            movetext = abbr + p2.letter_notation().lower()
         else:
             movetext = abbr + "x" + p2.letter_notation()
 
-        print(movetext)
+        print("move: " + movetext)
 
 
     def items(self):
         return self.state.items()
 
-    def get_piece_at(self, coord: BoardCoordinates) -> Piece:
+    def get_piece_at(self, coord: BoardCoordinates) -> Piece | None:
         """Find the piece in board with coordinates `coord`"""
         pos = str(coord)
+        if pos not in self.state:
+            return None
         return self.state[pos]
 
     def _update_coord_piece(self, coord: BoardCoordinates, piece: Piece | None):
