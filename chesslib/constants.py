@@ -2,6 +2,8 @@
 BOARD_SIZE = 8
 Y_AXIS_LABEL = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
 X_AXIS_LABEL = tuple(range(1, 9))
+COLOR_1 = "white"
+COLOR_2 = "grey"
 
 # FEN Data: https://www.chess.com/terms/fen-chess
 INIT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"

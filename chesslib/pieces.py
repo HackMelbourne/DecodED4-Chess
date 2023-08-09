@@ -27,7 +27,7 @@ class Pawn(Piece):
 class Knight(Piece):
     def __init__(self, color):
         Piece.__init__(self, color)
-        self.abbreviation = "K"
+        self.abbreviation = "N"
 
 
 class Rook(Piece):
