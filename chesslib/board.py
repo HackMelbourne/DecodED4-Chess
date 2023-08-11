@@ -1,9 +1,9 @@
 import re
-from copy import deepcopy
 
 from .pieces import Piece, generate_piece, King, Rook, Pawn
 from .constants import *
 from .utils import BoardCoordinates
+
 
 class ChessError(Exception): pass
 class InvalidCoord(ChessError): pass
@@ -115,47 +115,10 @@ class Board:
 
         return list(map)
 
-    def is_in_check_after_move(self, p1: str, p2: str) -> bool:
-        tmp = deepcopy(self)
-        tmp.do_move(p1, p2)
-        return tmp.is_in_check(self.state[p1].color)
-
-    def is_in_check(self, color: str) -> bool:
-        self._verify_color(color)
-        king = self._get_king(color)
-        opponent = self.get_opponent(color)
-        # TODO
-        return False
-
     def get_opponent(self, color: str):
         if color == "white":
             return "black"
         return "white"
-
-    def _get_king(self ,color: str) -> Piece:
-        self._verify_color(color)
-        return self.state[self._get_king_position(color)]
-
-    def _get_king_position(self, color: str) -> str:
-        for pos in list(self.state.keys()):
-            if self.is_king(self.state[pos]) and self.state[pos].color == color:
-                return pos
-
-    def _has_possible_moves(self, color: str) -> bool:
-        return len(self._all_possible_moves(color)) > 0
-
-    def _all_possible_moves(self, color: str):
-        """Returns a lost of `color`'s possible moves. Does not check for check."""
-        if color not in ("black", "white"):
-            raise InvalidColor
-
-        result = []
-        for coord in list(self.state.keys()):
-            if (self.state[coord] is not None) and self.state[coord].color == color:
-                moves = self.state[coord].possible_moves(coord)
-                if moves:
-                    result += moves
-        return result
 
     def _check_repeated_moves(self):
         """Game draws after both players play the same move for 3 times"""
