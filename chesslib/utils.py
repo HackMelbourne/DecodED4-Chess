@@ -15,7 +15,7 @@ class BoardCoordinates:
     def letter_notation(self) -> str | None:
         if not self.is_in_bounds():
             return
-        return Y_AXIS_LABEL[int(self.col)] + str(X_AXIS_LABEL[int(self.row)])
+        return Y_AXIS_LABEL[int(self.row)] + str(X_AXIS_LABEL[int(self.col)])
 
     def number_notation(self) -> tuple[int, int]:
         return self.row, self.col
@@ -29,4 +29,4 @@ class BoardCoordinates:
 
 
 def letter_to_board_coords(coord: str) -> BoardCoordinates:
-    return BoardCoordinates(int(coord[1]) - 1, Y_AXIS_LABEL.index(coord[0]))
+    return BoardCoordinates(Y_AXIS_LABEL.index(coord[0]), int(coord[1]) - 1)

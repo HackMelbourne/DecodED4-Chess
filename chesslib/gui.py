@@ -69,8 +69,6 @@ class BoardGui(tk.Frame):
             return
 
         self.chessboard.move(p1, p2)
-        self.square_background(p1, "tan1")
-        self.square_background(p2, "tan1")
 
     def highlight(self, pos: BoardCoordinates):
         piece = self.chessboard.get_piece_at(pos)
@@ -102,8 +100,8 @@ class BoardGui(tk.Frame):
         for coord, piece in self.chessboard.items():
             if piece is not None:
                 parsed = letter_to_board_coords(coord)
-                x, y = parsed.number_notation()
-                self.draw_piece(piece, x, y)
+                row, col = parsed.number_notation()
+                self.draw_piece(piece, row, col)
 
     def draw_piece(self, piece: Piece, row: int, col: int):
         """Draw a piece on the board"""
@@ -147,10 +145,10 @@ class BoardGui(tk.Frame):
                 color = self.color2
 
             for col in range(self.columns):
-                if self.highlighted is not None and BoardCoordinates(col, row) in self.highlighted:
-                    self.square_background(BoardCoordinates(col, row), 'spring green')
+                if self.highlighted is not None and BoardCoordinates(row, col) in self.highlighted:
+                    self.square_background(BoardCoordinates(row, col), 'spring green')
                 else:
-                    self.square_background(BoardCoordinates(col, row), color)
+                    self.square_background(BoardCoordinates(row, col), color)
                 color = self.color1 if color == self.color2 else self.color2
         for name in self.pieces:
             self.place_piece(name, self.pieces[name][0], self.pieces[name][1])

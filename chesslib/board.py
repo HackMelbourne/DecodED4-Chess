@@ -1,8 +1,9 @@
 import re
+from copy import deepcopy
 
 from .pieces import Piece, generate_piece, King, Rook, Pawn
 from .constants import *
-from .utils import BoardCoordinates
+from .utils import BoardCoordinates, letter_to_board_coords
 
 
 class ChessError(Exception): pass
@@ -57,6 +58,20 @@ class Board:
         if self.player_turn != moved_piece.color:
             raise NotYourTurn("Not " + moved_piece.color + "'s turn")
 
+        enemy = self.get_opponent(moved_piece.color)
+        possible_moves = moved_piece.possible_moves(p1)
+
+        if p2 not in possible_moves:
+            raise InvalidMove
+
+        # If enemy has any moves look for check
+        if self._all_possible_moves(enemy) and self.is_in_check_after_move(p1, p2):
+            raise Check
+        if not possible_moves and self.is_in_check(moved_piece.color):
+            raise CheckMate
+        elif not possible_moves:
+            raise Draw
+
         self._do_move(p1, p2)
         self._finish_move(moved_piece, dest_piece, p1, p2)
 
@@ -101,7 +116,7 @@ class Board:
         else:
             self.state[pos] = piece
 
-    def occupied(self, color) -> list[BoardCoordinates]:
+    def occupied(self, color: str) -> list[BoardCoordinates]:
         """
             Return a list of coordinates occupied by `color`
         """
@@ -113,12 +128,48 @@ class Board:
             if self.state[coord].color == color:
                 result.append(coord)
 
-        return list(map)
+        return list(map(letter_to_board_coords, result))
+
+    def is_in_check_after_move(self, p1: BoardCoordinates, p2: BoardCoordinates) -> bool:
+        tmp = deepcopy(self)
+        tmp._do_move(p1, p2)
+        return tmp.is_in_check(self.get_piece_at(p1).color)
+
+    def is_in_check(self, color: str) -> bool:
+        self._verify_color(color)
+        king_location = self._get_king_position(color)
+        opponent = self.get_opponent(color)
+        return king_location in self._all_possible_moves(opponent)
 
     def get_opponent(self, color: str):
         if color == "white":
             return "black"
         return "white"
+
+    def _get_king(self ,color: str) -> Piece:
+        self._verify_color(color)
+        return self.state[self._get_king_position(color).letter_notation()]
+
+    def _get_king_position(self, color: str) -> BoardCoordinates:
+        for pos in list(self.state.keys()):
+            if self.is_king(self.state[pos]) and self.state[pos].color == color:
+                return letter_to_board_coords(pos)
+
+    def _has_possible_moves(self, color: str) -> bool:
+        return len(self._all_possible_moves(color)) > 0
+
+    def _all_possible_moves(self, color: str) -> list[BoardCoordinates]:
+        """Returns a list of `color`'s possible moves. Does not check for check."""
+        if color not in ("black", "white"):
+            raise InvalidColor
+
+        result = []
+        for coord in list(self.state.keys()):
+            if (self.state[coord] is not None) and self.state[coord].color == color:
+                moves = self.state[coord].possible_moves(letter_to_board_coords(coord))
+                if moves:
+                    result += moves
+        return result
 
     def _check_repeated_moves(self):
         """Game draws after both players play the same move for 3 times"""
