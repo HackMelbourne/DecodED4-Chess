@@ -13,6 +13,7 @@ class BoardGui(tk.Frame):
         self.square_size = squaresize
         self.chessboard = chessboard
         self.highlighted = None
+        self.selected_piece = None
 
         canvas_width = self.columns * squaresize
         canvas_height = self.rows * squaresize
@@ -25,8 +26,52 @@ class BoardGui(tk.Frame):
         self.color1 = "white"
         self.color2 = "grey"
         self.canvas.bind("<Configure>", self.refresh)
+        self.canvas.bind("<Button-1>", self.click)
 
+    def click(self, event: tk.Event):
+        print("mouse clicked")
+        col_size = row_size = event.widget.master.square_size
+        current_col = int(event.x / col_size)
+        current_row = int(8 - (event.y / row_size))
 
+        position = BoardCoordinates(current_row, current_col)
+
+        if self.selected_piece is not None:
+            print("second", self.selected_piece)
+            # update position of piece
+            self.move(self.selected_piece[1], position)
+            self.selected_piece = None
+            self.highlighted = None
+            self.refresh(event)
+            self.draw_pieces()
+
+        # highlighting clicked square
+        self.highlight(position)
+        if self.highlighted is not None:
+            for square in self.highlighted:
+                self.square_background(square, "spring green")
+
+    def move(self, p1, p2):
+        piece = self.chessboard.get_piece_at(p1)
+        dest_piece = self.chessboard.get_piece_at(p2)
+        print(dest_piece)
+
+        if dest_piece is not None and dest_piece.color == piece.color:
+            return
+
+        print(p1, p2)
+
+        self.chessboard.move(p1, p2)
+
+    def highlight(self, pos):
+        piece = self.chessboard.get_piece_at(pos)
+        print(piece)
+        if piece is None or (piece.color != self.chessboard.player_turn):
+            return
+
+        self.selected_piece = (piece, pos)
+        self.highlighted = [pos]
+        print(self.selected_piece)
 
     def draw_pieces(self):
         self.canvas.delete("piece")   # clear all existing pieces on the canvas to prevent duplicates
@@ -68,7 +113,7 @@ class BoardGui(tk.Frame):
     def square_background(self, coord, color=None):
         """Change the color of the square at `coord` to `color`"""
         if color is None:
-            color = get_color_from_coords(coord)
+            color = self.get_color_from_coords(coord)
         x1 = (coord.col * self.square_size)
         y1 = ((7 - coord.row) * self.square_size)
         x2 = x1 + self.square_size
@@ -105,9 +150,9 @@ class BoardGui(tk.Frame):
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
 
-        
-        def get_color_from_coords(self, coords: BoardCoordinates):
-            return [self.color1, self.color2][(coords.row - coords.col) % 2]
+
+    def get_color_from_coords(self, coords: BoardCoordinates):
+        return [self.color1, self.color2][(coords.row - coords.col) % 2]
         
 
 def display(chessboard: Board):

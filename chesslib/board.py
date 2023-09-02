@@ -5,6 +5,16 @@ from .pieces import generate_piece
 # FEN notation for the initial board state
 INIT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
+
+class ChessError(Exception): pass
+class InvalidCoord(ChessError): pass
+class InvalidColor(ChessError): pass
+class InvalidMove(ChessError): pass
+class Check(ChessError): pass
+class CheckMate(ChessError): pass
+class Draw(ChessError): pass
+class NotYourTurn(ChessError): pass
+
 def expand_blanks(match):
     return " " * int(match.group(0))
 
@@ -14,6 +24,48 @@ class Board:
         self.state = {}    # internal state of the board: dict[str, Piece]
         self.player_turn = "white"
         self.load(INIT_FEN)
+
+    def move(self, p1, p2):
+        moved_piece = self.get_piece_at(p1)
+        dest_piece = self.get_piece_at(p2)
+
+        if self.player_turn != moved_piece.color:
+            print(moved_piece.color)
+            raise NotYourTurn("Not your turn")
+
+        self._do_move(p1, p2)
+        self._finish_move(moved_piece, dest_piece, p1, p2)
+
+    def _do_move(self, p1, p2):
+        moved_piece = self.get_piece_at(p1)
+        self._update_coord_piece(p1, None)
+        self._update_coord_piece(p2, moved_piece)
+
+    def _update_coord_piece(self, coord, piece):
+        pos = str(coord)
+        if piece is None:
+            del self.state[pos]
+        else:
+            self.state[pos] = piece
+
+    def _finish_move(self, moved_piece, dest_piece, p1, p2):
+        enemy = self.get_opponent(moved_piece.color)
+        self.player_turn = enemy
+        print(self.player_turn)
+        abbr = moved_piece.abbreviation
+
+        # print out moves
+        if dest_piece is None:
+            movetext = abbr + p2.letter_notation().lower()
+        else:
+            movetext = abbr + "x" + p2.letter_notation()
+
+        print("Move: " + movetext)
+
+    def get_opponent(self, color):
+        if color == "white":
+            return "black"
+        return "white"
 
     def load(self, config):
         """Import state from FEN notation"""
